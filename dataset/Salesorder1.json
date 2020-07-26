@@ -1,0 +1,51 @@
+{
+	"name": "Salesorder1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "OrderDate",
+				"type": "date"
+			},
+			{
+				"name": "Region",
+				"type": "char"
+			},
+			{
+				"name": "Rep",
+				"type": "char"
+			},
+			{
+				"name": "item",
+				"type": "char"
+			},
+			{
+				"name": "Units",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Unit Cost",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "Total",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Salesorder1"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
