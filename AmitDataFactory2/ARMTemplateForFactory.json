@@ -202,6 +202,49 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SCD')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SCD1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SCD1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Withhash": {},
+									"withouthash": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/SCD1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Lookuptables')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -216,6 +259,221 @@
 				"typeProperties": {
 					"schema": "dbo",
 					"table": "Product"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Product_OLTP')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductNumber",
+						"type": "nvarchar"
+					},
+					{
+						"name": "unitprice",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Product"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Product_SCD2_DWH')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "PSG_Key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductNumber",
+						"type": "nvarchar"
+					},
+					{
+						"name": "unitprice",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					},
+					{
+						"name": "current_flag",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "inserted_date",
+						"type": "date"
+					},
+					{
+						"name": "Lastupdate_date",
+						"type": "date"
+					},
+					{
+						"name": "PHASHkey",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Product_SCD2_DWH"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Product_SCD2_OLTP')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "SNo",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductNumber",
+						"type": "nvarchar"
+					},
+					{
+						"name": "unitprice",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Product_SCD2_OLTP"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Product_hash')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductNumber",
+						"type": "nvarchar"
+					},
+					{
+						"name": "unitprice",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					},
+					{
+						"name": "inserted_date",
+						"type": "date"
+					},
+					{
+						"name": "Lastupdate_date",
+						"type": "date"
+					},
+					{
+						"name": "Whash",
+						"type": "nvarchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Product_Stage"
 				}
 			},
 			"dependsOn": [
@@ -416,52 +674,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzureBlobStorage1",
-								"type": "LinkedServiceReference"
-							},
-							"name": "Excel"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Salesorder",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						},
-						{
-							"dataset": {
-								"referenceName": "Salesorder1",
-								"type": "DatasetReference"
-							},
-							"name": "sink2"
-						}
-					],
-					"transformations": [
-						{
-							"name": "ConditionalSplit1"
-						}
-					],
-					"script": "source(output(\n\t\tOrderDate as date,\n\t\tRegion as string,\n\t\tRep as string,\n\t\tItem as string,\n\t\tUnits as double,\n\t\t{Unit Cost} as double,\n\t\tTotal as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'excel',\n\tcontainer: 'input',\n\tfileName: 'SampleData.xlsx',\n\tsheetName: 'SalesOrders',\n\tfirstRowAsHeader: true) ~> Excel\nExcel split(year(OrderDate)>=2020,\n\tdisjoint: false) ~> ConditionalSplit1@(Year2020, Year2019)\nConditionalSplit1@Year2020 sink(input(\n\t\tSno as integer,\n\t\tOrderDate as string,\n\t\tRegion as string,\n\t\tRep as string,\n\t\titem as string,\n\t\tUnits as string,\n\t\tUnit_Cost as string,\n\t\tTotal as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tOrderDate,\n\t\tRegion,\n\t\tRep,\n\t\titem = Item,\n\t\tUnits,\n\t\tUnit_Cost = {Unit Cost},\n\t\tTotal\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nConditionalSplit1@Year2019 sink(input(\n\t\tOrderDate as date,\n\t\tRegion as string,\n\t\tRep as string,\n\t\titem as string,\n\t\tUnits as integer,\n\t\t{Unit Cost} as decimal(18,0),\n\t\tTotal as decimal(18,0)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]",
-				"[concat(variables('factoryId'), '/datasets/Salesorder')]",
-				"[concat(variables('factoryId'), '/datasets/Salesorder1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/SCD1')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -517,149 +729,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Product_hash')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "ProductID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ProductNumber",
-						"type": "nvarchar"
-					},
-					{
-						"name": "unitprice",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Color",
-						"type": "nvarchar"
-					},
-					{
-						"name": "inserted_date",
-						"type": "date"
-					},
-					{
-						"name": "Lastupdate_date",
-						"type": "date"
-					},
-					{
-						"name": "Whash",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Product_Stage"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Product_OLTP')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "ProductID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ProductNumber",
-						"type": "nvarchar"
-					},
-					{
-						"name": "unitprice",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Color",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Product"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "SCD1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"Withhash": {},
-									"withouthash": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							}
-						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/SCD1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/SCD2')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -689,6 +758,13 @@
 								"type": "DatasetReference"
 							},
 							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Product_SCD2_DWH",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
 						}
 					],
 					"transformations": [
@@ -709,9 +785,12 @@
 						},
 						{
 							"name": "Exists1"
+						},
+						{
+							"name": "DerivedColumn2"
 						}
 					],
-					"script": "source(output(\n\t\tSNo as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource(output(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source2\nsource1 derive(SCDHash = md5(iif(isNull(Name),'',toString(Name))\r\n+ iif(isNull(ProductNumber),'',toString(ProductNumber))\r\n+ iif(isNull(unitprice),'',toString(unitprice))\r\n+ iif(isNull(Color),'',toString(Color))\r\n)) ~> Hash\nHash, source2 exists(SCDHash == PHASHkey,\n\tnegate:true,\n\tbroadcast: 'auto')~> Exists\nExists, source2 lookup(source1@ProductID == source2@ProductID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nLookup1 split(isNull(current_flag),\n\tdisjoint: true) ~> ConditionalSplit1@(NewRow, UpdateRow)\nConditionalSplit1@NewRow derive(current_flag = 1,\n\t\tinserted_date = currentTimestamp()) ~> DerivedColumn1\nConditionalSplit1@UpdateRow, source2 exists(ConditionalSplit1@UpdateRow@ProductID == source2@ProductID &&\r\n(\r\nConditionalSplit1@UpdateRow@PHASHkey != source2@PHASHkey\r\n),\n\tnegate:false,\n\tbroadcast: 'auto')~> Exists1\nDerivedColumn1 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tPSG_Key,\n\t\tProductID = ConditionalSplit1@NewRow@ProductID,\n\t\tName = ConditionalSplit1@NewRow@Name,\n\t\tProductNumber = ConditionalSplit1@NewRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@NewRow@unitprice,\n\t\tColor = ConditionalSplit1@NewRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
+					"script": "source(output(\n\t\tSNo as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource(output(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source2\nsource1 derive(SCDHash = md5(iif(isNull(Name),'',toString(Name))\r\n+ iif(isNull(ProductNumber),'',toString(ProductNumber))\r\n+ iif(isNull(unitprice),'',toString(unitprice))\r\n+ iif(isNull(Color),'',toString(Color))\r\n)) ~> Hash\nHash, source2 exists(SCDHash == PHASHkey,\n\tnegate:true,\n\tbroadcast: 'auto')~> Exists\nExists, source2 lookup(source1@ProductID == source2@ProductID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nLookup1 split(isNull(current_flag),\n\tdisjoint: false) ~> ConditionalSplit1@(NewRow, UpdateRow)\nConditionalSplit1@NewRow derive(current_flag = 1,\n\t\tinserted_date = currentTimestamp()) ~> DerivedColumn1\nConditionalSplit1@UpdateRow, source2 exists(ConditionalSplit1@UpdateRow@ProductID== source2@ProductID &&\r\n(\r\nSCDHash != source2@PHASHkey\r\n),\n\tnegate:false,\n\tbroadcast: 'auto')~> Exists1\nExists1 derive(current_flag = 0) ~> DerivedColumn2\nDerivedColumn1 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = ConditionalSplit1@NewRow@ProductID,\n\t\tName = ConditionalSplit1@NewRow@Name,\n\t\tProductNumber = ConditionalSplit1@NewRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@NewRow@unitprice,\n\t\tColor = ConditionalSplit1@NewRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey = SCDHash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nDerivedColumn2 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = ConditionalSplit1@UpdateRow@ProductID,\n\t\tName = ConditionalSplit1@UpdateRow@Name,\n\t\tProductNumber = ConditionalSplit1@UpdateRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@UpdateRow@unitprice,\n\t\tColor = ConditionalSplit1@UpdateRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey = SCDHash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
 				}
 			},
 			"dependsOn": [
@@ -720,118 +799,93 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Product_SCD2_OLTP')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "SNo",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "ProductID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ProductNumber",
-						"type": "nvarchar"
-					},
-					{
-						"name": "unitprice",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Color",
-						"type": "nvarchar"
-					}
-				],
+				"type": "MappingDataFlow",
 				"typeProperties": {
-					"schema": "dbo",
-					"table": "Product_SCD2_OLTP"
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureBlobStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "Excel"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Salesorder",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Salesorder1",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "ConditionalSplit1"
+						}
+					],
+					"script": "source(output(\n\t\tOrderDate as date,\n\t\tRegion as string,\n\t\tRep as string,\n\t\tItem as string,\n\t\tUnits as double,\n\t\t{Unit Cost} as double,\n\t\tTotal as double\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tformat: 'excel',\n\tcontainer: 'input',\n\tfileName: 'SampleData.xlsx',\n\tsheetName: 'SalesOrders',\n\tfirstRowAsHeader: true) ~> Excel\nExcel split(year(OrderDate)>=2020,\n\tdisjoint: false) ~> ConditionalSplit1@(Year2020, Year2019)\nConditionalSplit1@Year2020 sink(input(\n\t\tSno as integer,\n\t\tOrderDate as string,\n\t\tRegion as string,\n\t\tRep as string,\n\t\titem as string,\n\t\tUnits as string,\n\t\tUnit_Cost as string,\n\t\tTotal as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tOrderDate,\n\t\tRegion,\n\t\tRep,\n\t\titem = Item,\n\t\tUnits,\n\t\tUnit_Cost = {Unit Cost},\n\t\tTotal\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nConditionalSplit1@Year2019 sink(input(\n\t\tOrderDate as date,\n\t\tRegion as string,\n\t\tRep as string,\n\t\titem as string,\n\t\tUnits as integer,\n\t\t{Unit Cost} as decimal(18,0),\n\t\tTotal as decimal(18,0)\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]",
+				"[concat(variables('factoryId'), '/datasets/Salesorder')]",
+				"[concat(variables('factoryId'), '/datasets/Salesorder1')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Product_SCD2_DWH')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
+			"name": "[concat(parameters('factoryName'), '/SCD2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
+				"activities": [
 					{
-						"name": "PSG_Key",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "ProductID",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Name",
-						"type": "nvarchar"
-					},
-					{
-						"name": "ProductNumber",
-						"type": "nvarchar"
-					},
-					{
-						"name": "unitprice",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "Color",
-						"type": "nvarchar"
-					},
-					{
-						"name": "current_flag",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "inserted_date",
-						"type": "date"
-					},
-					{
-						"name": "Lastupdate_date",
-						"type": "date"
-					},
-					{
-						"name": "PHASHkey",
-						"type": "nvarchar"
+						"name": "SCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SCD2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"source2": {},
+									"sink1": {},
+									"sink2": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
 					}
 				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "Product_SCD2_DWH"
-				}
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+				"[concat(variables('factoryId'), '/dataflows/SCD2')]"
 			]
 		}
 	]
