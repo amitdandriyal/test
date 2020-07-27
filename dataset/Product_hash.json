@@ -1,5 +1,5 @@
 {
-	"name": "Product_oltp",
+	"name": "Product_hash",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureSqlDatabase1",
@@ -34,11 +34,15 @@
 			{
 				"name": "Color",
 				"type": "nvarchar"
+			},
+			{
+				"name": "Whash",
+				"type": "nvarchar"
 			}
 		],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "Product"
+			"table": "Product_Stage"
 		}
 	}
 }
