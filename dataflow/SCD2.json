@@ -6,15 +6,19 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Product_OLTP",
+						"referenceName": "Product_SCD2_OLTP",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
 				}
 			],
 			"sinks": [],
-			"transformations": [],
-			"script": "source(output(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1"
+			"transformations": [
+				{
+					"name": "DerivedColumn1"
+				}
+			],
+			"script": "source(output(\n\t\tSNo as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive(SCDHash = sha1(Name+ProductNumber+Color)) ~> DerivedColumn1"
 		}
 	}
 }
