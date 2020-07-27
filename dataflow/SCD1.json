@@ -1,0 +1,25 @@
+{
+	"name": "SCD1",
+	"properties": {
+		"description": "Implementing SCD 1",
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Product_oltp",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "DerivedColumn1"
+				}
+			],
+			"script": "source(output(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tMakeFlag as integer,\n\t\tFinishedGoodsFlag as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive(DWHash = sha1(Name+ProductNumber+Color)) ~> DerivedColumn1"
+		}
+	}
+}
