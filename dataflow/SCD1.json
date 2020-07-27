@@ -7,19 +7,43 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Product_oltp",
+						"referenceName": "Product_hash",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "Withhash"
+				},
+				{
+					"dataset": {
+						"referenceName": "Product_OLTP",
+						"type": "DatasetReference"
+					},
+					"name": "withouthash"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Product_hash",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
-					"name": "DerivedColumn1"
+					"name": "DerivedColumn"
+				},
+				{
+					"name": "Exists"
+				},
+				{
+					"name": "Lookup"
+				},
+				{
+					"name": "AlterRow1"
 				}
 			],
-			"script": "source(output(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tMakeFlag as integer,\n\t\tFinishedGoodsFlag as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource1 derive(DWHash = sha1(Name+ProductNumber+Color)) ~> DerivedColumn1"
+			"script": "source(output(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tWhash as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> Withhash\nsource(output(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> withouthash\nwithouthash derive(oltphash = sha1(Name+ProductNumber+Color)) ~> DerivedColumn\nDerivedColumn, Withhash exists(oltphash == Whash,\n\tnegate:true,\n\tbroadcast: 'auto')~> Exists\nExists, Withhash lookup(withouthash@ProductID == Withhash@ProductID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup\nLookup alterRow(updateIf(true())) ~> AlterRow1\nAlterRow1 sink(input(\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tWhash as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['ProductID'],\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = withouthash@ProductID,\n\t\tName = withouthash@Name,\n\t\tProductNumber = withouthash@ProductNumber,\n\t\tunitprice = withouthash@unitprice,\n\t\tColor = withouthash@Color,\n\t\tWhash = oltphash,\n\t\tProductID = Withhash@ProductID,\n\t\tName = Withhash@Name,\n\t\tProductNumber = Withhash@ProductNumber,\n\t\tunitprice = Withhash@unitprice,\n\t\tColor = Withhash@Color,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tWhash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1"
 		}
 	}
 }
