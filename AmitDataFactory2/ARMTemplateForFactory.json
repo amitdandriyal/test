@@ -245,6 +245,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SCD2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "SCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "SCD2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"source2": {},
+									"sink1": {},
+									"sink2": {},
+									"sink3": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/SCD2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Lookuptables')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -765,6 +810,13 @@
 								"type": "DatasetReference"
 							},
 							"name": "sink2"
+						},
+						{
+							"dataset": {
+								"referenceName": "Product_SCD2_DWH",
+								"type": "DatasetReference"
+							},
+							"name": "sink3"
 						}
 					],
 					"transformations": [
@@ -788,9 +840,18 @@
 						},
 						{
 							"name": "DerivedColumn2"
+						},
+						{
+							"name": "DerivedColumn3"
+						},
+						{
+							"name": "Select1"
+						},
+						{
+							"name": "AlterRow1"
 						}
 					],
-					"script": "source(output(\n\t\tSNo as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource(output(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source2\nsource1 derive(SCDHash = md5(iif(isNull(Name),'',toString(Name))\r\n+ iif(isNull(ProductNumber),'',toString(ProductNumber))\r\n+ iif(isNull(unitprice),'',toString(unitprice))\r\n+ iif(isNull(Color),'',toString(Color))\r\n)) ~> Hash\nHash, source2 exists(SCDHash == PHASHkey,\n\tnegate:true,\n\tbroadcast: 'auto')~> Exists\nExists, source2 lookup(source1@ProductID == source2@ProductID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nLookup1 split(isNull(current_flag),\n\tdisjoint: false) ~> ConditionalSplit1@(NewRow, UpdateRow)\nConditionalSplit1@NewRow derive(current_flag = 1,\n\t\tinserted_date = currentTimestamp()) ~> DerivedColumn1\nConditionalSplit1@UpdateRow, source2 exists(ConditionalSplit1@UpdateRow@ProductID== source2@ProductID &&\r\n(\r\nSCDHash != source2@PHASHkey\r\n),\n\tnegate:false,\n\tbroadcast: 'auto')~> Exists1\nExists1 derive(current_flag = 0) ~> DerivedColumn2\nDerivedColumn1 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = ConditionalSplit1@NewRow@ProductID,\n\t\tName = ConditionalSplit1@NewRow@Name,\n\t\tProductNumber = ConditionalSplit1@NewRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@NewRow@unitprice,\n\t\tColor = ConditionalSplit1@NewRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey = SCDHash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nDerivedColumn2 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = ConditionalSplit1@UpdateRow@ProductID,\n\t\tName = ConditionalSplit1@UpdateRow@Name,\n\t\tProductNumber = ConditionalSplit1@UpdateRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@UpdateRow@unitprice,\n\t\tColor = ConditionalSplit1@UpdateRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey = SCDHash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2"
+					"script": "source(output(\n\t\tSNo as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source1\nsource(output(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> source2\nsource1 derive(SCDHash = md5(iif(isNull(Name),'',toString(Name))\r\n+ iif(isNull(ProductNumber),'',toString(ProductNumber))\r\n+ iif(isNull(unitprice),'',toString(unitprice))\r\n+ iif(isNull(Color),'',toString(Color))\r\n)) ~> Hash\nHash, source2 exists(SCDHash == PHASHkey,\n\tnegate:true,\n\tbroadcast: 'auto')~> Exists\nExists, source2 lookup(source1@ProductID == source2@ProductID,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nLookup1 split(isNull(current_flag),\n\tdisjoint: false) ~> ConditionalSplit1@(NewRow, UpdateRow)\nConditionalSplit1@NewRow derive(current_flag = 1,\n\t\tinserted_date = currentTimestamp()) ~> DerivedColumn1\nConditionalSplit1@UpdateRow, source2 exists(ConditionalSplit1@UpdateRow@ProductID== source2@ProductID &&\r\n(\r\nSCDHash != source2@PHASHkey\r\n),\n\tnegate:false,\n\tbroadcast: 'auto')~> Exists1\nExists1 derive(current_flag = 1) ~> DerivedColumn2\nExists1 derive(current_flag = 0,\n\t\tLast_Date = currentTimestamp()) ~> DerivedColumn3\nDerivedColumn3 select(mapColumn(\n\t\tcurrent_flag,\n\t\tLastupdate_date = Last_Date,\n\t\tProductID = ConditionalSplit1@UpdateRow@ProductID\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 alterRow(updateIf(true())) ~> AlterRow1\nDerivedColumn1 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = ConditionalSplit1@NewRow@ProductID,\n\t\tName = ConditionalSplit1@NewRow@Name,\n\t\tProductNumber = ConditionalSplit1@NewRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@NewRow@unitprice,\n\t\tColor = ConditionalSplit1@NewRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey = SCDHash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink1\nDerivedColumn2 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID = ConditionalSplit1@UpdateRow@ProductID,\n\t\tName = ConditionalSplit1@UpdateRow@Name,\n\t\tProductNumber = ConditionalSplit1@UpdateRow@ProductNumber,\n\t\tunitprice = ConditionalSplit1@UpdateRow@unitprice,\n\t\tColor = ConditionalSplit1@UpdateRow@Color,\n\t\tcurrent_flag,\n\t\tinserted_date,\n\t\tLastupdate_date,\n\t\tPHASHkey = SCDHash\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink2\nAlterRow1 sink(input(\n\t\tPSG_Key as integer,\n\t\tProductID as integer,\n\t\tName as string,\n\t\tProductNumber as string,\n\t\tunitprice as integer,\n\t\tColor as string,\n\t\tcurrent_flag as integer,\n\t\tinserted_date as date,\n\t\tLastupdate_date as date,\n\t\tPHASHkey as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:['ProductID'],\n\tformat: 'table',\n\tmapColumn(\n\t\tProductID,\n\t\tcurrent_flag,\n\t\tLastupdate_date\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> sink3"
 				}
 			},
 			"dependsOn": [
@@ -842,50 +903,6 @@
 				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]",
 				"[concat(variables('factoryId'), '/datasets/Salesorder')]",
 				"[concat(variables('factoryId'), '/datasets/Salesorder1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SCD2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "SCD2",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "SCD2",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"source2": {},
-									"sink1": {},
-									"sink2": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							}
-						}
-					}
-				],
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/SCD2')]"
 			]
 		}
 	]
